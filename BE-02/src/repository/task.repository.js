@@ -19,6 +19,8 @@ function findAll({ search, done } = {}) {
     sql += ' WHERE ' + conditions.join(' AND ');
   }
 
+  sql += ' ORDER BY title COLLATE NOCASE';
+
   return db.prepare(sql).all(...values).map(t => ({ ...t, done: !!t.done }));
 }
 
