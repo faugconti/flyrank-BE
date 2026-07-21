@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "better-sqlite3": "^13.0.1",
+    "better-sqlite3": "^9.6.0",
     "express": "^5.2.1",
     "swagger-ui-express": "^5.0.1"
   }

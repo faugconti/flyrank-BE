@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 
 # OpenCode
 AGENTS.md
+
+# SQLite database
+tasks.db

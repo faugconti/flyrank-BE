@@ -2,27 +2,22 @@ const repository = require('../repository/task.repository');
 const { NotFoundError, ValidationError } = require('../errors');
 
 exports.listTasks = ({ done, search } = {}) => {
-    let result = repository.findAll();
-
-    if (done !== undefined) {
-        if (done !== 'true' && done !== 'false') {
-            throw new ValidationError;
-        }
-        const wantDone = done === 'true';
-        result = result.filter((t) => t.done === wantDone);
+    if (done !== undefined && done !== 'true' && done !== 'false') {
+        throw new ValidationError;
     }
-
-    // Extra: search titles
     if (search !== undefined) {
         const word = String(search).trim();
         if (word === '') {
             throw new ValidationError('search must not be empty');
         }
-        const lower = word.toLowerCase();
-        result = result.filter((t) => t.title.toLowerCase().includes(lower));
+        search = word;
     }
 
-    return result;
+    const filters = {};
+    if (done !== undefined) filters.done = done === 'true';
+    if (search !== undefined) filters.search = search;
+
+    return repository.findAll(filters);
 };
 
 exports.getTask = (id) => {
@@ -80,9 +75,8 @@ exports.deleteTask = (id) => {
 }
 
 exports.getStats = () => {
-    const all = repository.findAll();
-    const done = all.filter((t) => t.done).length;
-    return { total: all.length, done, open: all.length - done };
+    const { total, done } = repository.getStats();
+    return { total, done, open: total - done };
 }
 
 exports.resetTasks = () => {
