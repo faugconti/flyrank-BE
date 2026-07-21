@@ -1,3 +1,14 @@
+const db = require('../db');
+
+function findAll() {
+  return db.prepare('SELECT * FROM tasks').all().map(t => ({ ...t, done: !!t.done }));
+}
+
+function findById(id) {
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+  return task ? { ...task, done: !!task.done } : null;
+}
+
 const SEED_TASKS = [
   { id: 1, title: 'Buy groceries', done: false },
   { id: 2, title: 'Walk the dog', done: true },
@@ -5,15 +16,6 @@ const SEED_TASKS = [
 ];
 
 let tasks = SEED_TASKS.map((task) => ({ ...task }));
-
-function findAll() {
-  return tasks.map((task) => ({ ...task }));
-}
-
-function findById(id) {
-  const task = tasks.find((t) => t.id === id);
-  return task ? { ...task } : null;
-}
 
 function create({ title, done }) {
   const id = tasks.length === 0 ? 1 : Math.max(...tasks.map((t) => t.id)) + 1;

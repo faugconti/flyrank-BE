@@ -1,6 +1,7 @@
 const express = require('express');
 const swaggerUI = require('swagger-ui-express');
 const openAPI = require('../openapi.json');
+require('./db');
 
 const taskRoutes = require('./routes/tasks.routes');
 const metaRoutes = require('./routes/meta.routes');
