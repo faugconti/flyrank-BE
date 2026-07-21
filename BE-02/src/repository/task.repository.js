@@ -9,14 +9,6 @@ function findById(id) {
   return task ? { ...task, done: !!task.done } : null;
 }
 
-const SEED_TASKS = [
-  { id: 1, title: 'Buy groceries', done: false },
-  { id: 2, title: 'Walk the dog', done: true },
-  { id: 3, title: 'Read a book', done: false },
-];
-
-let tasks = SEED_TASKS.map((task) => ({ ...task }));
-
 function create({ title, done }) {
   const query = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)').run(title, done ? 1 : 0);
   return { id: Number(query.lastInsertRowid), title, done: !!done };
@@ -49,9 +41,29 @@ function remove(id) {
   return query.changes > 0;
 }
 
+function getStats() {
+  const row = db.prepare(`
+    SELECT
+      COUNT(*) as total,
+      SUM(CASE WHEN done = 1 THEN 1 ELSE 0 END) as done
+    FROM tasks
+  `).get();
+  return { total: row.total, done: row.done };
+}
+
 function reset() {
-  tasks = SEED_TASKS.map((task) => ({ ...task }));
+  const seed = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)');
+  const clear = db.prepare('DELETE FROM tasks');
+
+  const resetTransaction = db.transaction(() => {
+    clear.run();
+    seed.run('Buy groceries', 0);
+    seed.run('Walk the dog', 1);
+    seed.run('Read a book', 0);
+  });
+
+  resetTransaction();
   return findAll();
 }
 
-module.exports = { findAll, findById, create, update, remove, reset };
+module.exports = { findAll, findById, create, update, remove, getStats, reset };

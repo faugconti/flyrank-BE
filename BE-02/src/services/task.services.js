@@ -80,9 +80,8 @@ exports.deleteTask = (id) => {
 }
 
 exports.getStats = () => {
-    const all = repository.findAll();
-    const done = all.filter((t) => t.done).length;
-    return { total: all.length, done, open: all.length - done };
+    const { total, done } = repository.getStats();
+    return { total, done, open: total - done };
 }
 
 exports.resetTasks = () => {
