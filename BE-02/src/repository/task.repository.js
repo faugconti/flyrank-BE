@@ -23,17 +23,30 @@ function create({ title, done }) {
 }
 
 function update(id, changes) {
-  const task = tasks.find((t) => t.id === id);
-  if (!task) return null;
-  Object.assign(task, changes);
-  return { ...task };
+  const fields = [];
+  const values = [];
+
+  if ('title' in changes) {
+    fields.push('title = ?');
+    values.push(changes.title);
+  }
+  if ('done' in changes) {
+    fields.push('done = ?');
+    values.push(changes.done ? 1 : 0);
+  }
+
+  if (fields.length === 0) return null;
+
+  values.push(id);
+  const query = db.prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`).run(...values);
+
+  if (query.changes === 0) return null;
+  return findById(id);
 }
 
 function remove(id) {
-  const index = tasks.findIndex((t) => t.id === id);
-  if (index === -1) return false;
-  tasks.splice(index, 1);
-  return true;
+  const query = db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
+  return query.changes > 0;
 }
 
 function reset() {
