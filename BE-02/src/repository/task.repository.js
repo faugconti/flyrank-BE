@@ -18,10 +18,8 @@ const SEED_TASKS = [
 let tasks = SEED_TASKS.map((task) => ({ ...task }));
 
 function create({ title, done }) {
-  const id = tasks.length === 0 ? 1 : Math.max(...tasks.map((t) => t.id)) + 1;
-  const task = { id, title, done };
-  tasks.push(task);
-  return { ...task };
+  const query = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)').run(title, done ? 1 : 0);
+  return { id: Number(query.lastInsertRowid), title, done: !!done };
 }
 
 function update(id, changes) {
