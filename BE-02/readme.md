@@ -9,7 +9,7 @@ Single file (`tasks.db`), zero setup, survives restarts. The database is created
 1. Clone the repository
 
 ```bash
-git clone https://github.com/faugconti/flyrank-BE-01.git
+git clone https://github.com/faugconti/flyrank-BE.git
 ```
 
 2. Install dependencies
