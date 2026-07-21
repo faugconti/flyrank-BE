@@ -1,7 +1,25 @@
 const db = require('../db');
 
-function findAll() {
-  return db.prepare('SELECT * FROM tasks').all().map(t => ({ ...t, done: !!t.done }));
+function findAll({ search, done } = {}) {
+  let sql = 'SELECT * FROM tasks';
+  const conditions = [];
+  const values = [];
+
+  if (search !== undefined) {
+    conditions.push('title LIKE ?');
+    values.push(`%${search}%`);
+  }
+
+  if (done !== undefined) {
+    conditions.push('done = ?');
+    values.push(done ? 1 : 0);
+  }
+
+  if (conditions.length > 0) {
+    sql += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  return db.prepare(sql).all(...values).map(t => ({ ...t, done: !!t.done }));
 }
 
 function findById(id) {
