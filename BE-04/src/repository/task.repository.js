@@ -1,6 +1,6 @@
 const db = require('../db');
 
-function findAll({ search, done } = {}) {
+async function findAll({ search, done } = {}) {
   let sql = 'SELECT * FROM tasks';
   const conditions = [];
   const values = [];
@@ -24,17 +24,17 @@ function findAll({ search, done } = {}) {
   return db.prepare(sql).all(...values).map(t => ({ ...t, done: !!t.done }));
 }
 
-function findById(id) {
+async function findById(id) {
   const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
   return task ? { ...task, done: !!task.done } : null;
 }
 
-function create({ title, done }) {
+async function create({ title, done }) {
   const query = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)').run(title, done ? 1 : 0);
   return { id: Number(query.lastInsertRowid), title, done: !!done };
 }
 
-function update(id, changes) {
+async function update(id, changes) {
   const fields = [];
   const values = [];
 
@@ -56,12 +56,12 @@ function update(id, changes) {
   return findById(id);
 }
 
-function remove(id) {
+async function remove(id) {
   const query = db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
   return query.changes > 0;
 }
 
-function getStats() {
+async function getStats() {
   const row = db.prepare(`
     SELECT
       COUNT(*) as total,
@@ -71,7 +71,7 @@ function getStats() {
   return { total: row.total, done: row.done };
 }
 
-function reset() {
+async function reset() {
   const seed = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)');
   const clear = db.prepare('DELETE FROM tasks');
 
