@@ -15,15 +15,28 @@ if (driver === 'postgres') {
     const Database = require('better-sqlite3');
     const dbPath = path.join(__dirname, '..', 'tasks.db');
     db = new Database(dbPath);
+}
 
-    const schemaFile = fs.readFileSync(path.join(sqlDir, 'schema.sqlite.sql'), 'utf8');
-    db.exec(schemaFile);
+async function initDb() {
+    if (driver === 'postgres') {
+        const schema = fs.readFileSync(path.join(sqlDir, 'schema.postgres.sql'), 'utf8');
+        await db.query(schema);
 
-    const { count } = db.prepare('SELECT COUNT(*) as count FROM tasks').get();
-    if (count === 0) {
-        const seed = fs.readFileSync(path.join(sqlDir, 'seed.sql'), 'utf8');
-        db.exec(seed);
+        const { rows } = await db.query('SELECT COUNT(*) as count FROM tasks');
+        if (Number(rows[0].count) === 0) {
+            const seed = fs.readFileSync(path.join(sqlDir, 'seed.postgres.sql'), 'utf8');
+            await db.query(seed);
+        }
+    } else {
+        const schema = fs.readFileSync(path.join(sqlDir, 'schema.sqlite.sql'), 'utf8');
+        db.exec(schema);
+
+        const { count } = db.prepare('SELECT COUNT(*) as count FROM tasks').get();
+        if (count === 0) {
+            const seed = fs.readFileSync(path.join(sqlDir, 'seed.sql'), 'utf8');
+            db.exec(seed);
+        }
     }
 }
 
-module.exports = db;
+module.exports = { db, initDb };
