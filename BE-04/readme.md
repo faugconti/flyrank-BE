@@ -1,4 +1,4 @@
-# flyrank-BE-02
+# flyrank-BE-04
 
 ## Why SQLite
 
@@ -12,16 +12,22 @@ Single file (`tasks.db`), zero setup, survives restarts. The database is created
 git clone https://github.com/faugconti/flyrank-BE.git
 ```
 
-2. Install dependencies
+2. Move to BE-04 Folder
 
 ```bash
-npm install
+cd BE-04
 ```
 
-3. Start the server
+3. Modify your .env
 
 ```bash
-npm run dev
+cp .env.example .env
+```
+
+4. Run the containers
+
+```bash
+docker-compose up -d
 ```
 
 The server will run on:
@@ -30,11 +36,28 @@ The server will run on:
 http://localhost:3000
 ```
 
-On first run, `tasks.db` is created automatically with the `tasks` table and three example tasks. The database file is git-ignored so each clone starts fresh.
+On first run, `tasks.db` is created automatically with the `tasks` table and three example tasks (if running with SQLite DB_PROVIDER env). 
+The database file is git-ignored so each clone starts fresh.
 
-## Database
+## Environment variables
+
+| Variable | Description |
+|---------|----------|
+| PORT | Server port (default: 3000)|
+| DB_DRIVER | sqlite (default) or postgres |
+| DATABASE_URL | Postgres connection string (e.g. postgres://postgres:dev@db:5432/tasks) |
+| POSTGRES_DB | Database name for the Postgres container |
+| POSTGRES_PASSWORD | Password for the Postgres container |
+
+
+## SQLite Database
 
 ![Database in DB Browser](screenshot.png)
+
+
+## Postgre Database
+
+![Database in DB Browser](postgres.png)
 
 ## Endpoints
 
