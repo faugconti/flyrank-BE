@@ -1,7 +1,7 @@
 const repository = require('../repository/task.repository');
 const { NotFoundError, ValidationError } = require('../errors');
 
-exports.listTasks = async ({ done, search } = {}) => {
+exports.listTasks = ({ done, search } = {}) => {
     if (done !== undefined && done !== 'true' && done !== 'false') {
         throw new ValidationError;
     }
@@ -17,26 +17,26 @@ exports.listTasks = async ({ done, search } = {}) => {
     if (done !== undefined) filters.done = done === 'true';
     if (search !== undefined) filters.search = search;
 
-    return await repository.findAll(filters);
+    return repository.findAll(filters);
 };
 
-exports.getTask = async (id) => {
-    const task = await repository.findById(id);
+exports.getTask = (id) => {
+    const task = repository.findById(id);
     if (!task) {
         throw new NotFoundError(`Task ${id} not found`);
     }
     return task;
 }
 
-exports.createTask = async (body = {}) => {
+exports.createTask = (body = {}) => {
     const { title } = body;
     if (title === undefined || title === null || String(title).trim() === '') {
         throw new ValidationError('title is required and cannot be empty');
     }
-    return await repository.create({ title: String(title).trim(), done: false });
+    return repository.create({ title: String(title).trim(), done: false });
 }
 
-exports.updateTask = async (id, body = {}) => {
+exports.updateTask = (id, body = {}) => {
     const hasTitle = Object.prototype.hasOwnProperty.call(body, 'title');
     const hasDone = Object.prototype.hasOwnProperty.call(body, 'done');
 
@@ -60,25 +60,25 @@ exports.updateTask = async (id, body = {}) => {
         changes.done = body.done;
     }
 
-    const updated = await repository.update(id, changes);
+    const updated = repository.update(id, changes);
     if (!updated) {
         throw new NotFoundError(`Task ${id} not found`);
     }
     return updated;
 }
 
-exports.deleteTask = async (id) => {
-    const removed = await repository.remove(id);
+exports.deleteTask = (id) => {
+    const removed = repository.remove(id);
     if (!removed) {
         throw new NotFoundError(`Task ${id} not found`);
     }
 }
 
-exports.getStats = async () => {
-    const { total, done } = await repository.getStats();
+exports.getStats = () => {
+    const { total, done } = repository.getStats();
     return { total, done, open: total - done };
 }
 
-exports.resetTasks = async () => {
-    return await repository.reset();
+exports.resetTasks = () => {
+    return repository.reset();
 }
