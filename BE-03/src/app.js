@@ -5,6 +5,7 @@ const { initDb } = require('./db');
 
 const taskRoutes = require('./routes/tasks.routes');
 const metaRoutes = require('./routes/meta.routes');
+const authRoutes = require('./routes/auth.routes');
 const { errorHandler } = require('./middleware/error-handler');
 
 const createApp = async () => {
@@ -13,6 +14,7 @@ const createApp = async () => {
     const app = express();
     app.use(express.json());
     app.use('/', metaRoutes);
+    app.use('/auth', authRoutes);
     app.use('/tasks', taskRoutes);
     app.use('/docs', swaggerUI.serve, swaggerUI.setup(openAPI));
     app.use(errorHandler);

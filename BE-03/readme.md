@@ -48,6 +48,8 @@ The database file is git-ignored so each clone starts fresh.
 | DATABASE_URL | Postgres connection string (e.g. postgres://postgres:dev@db:5432/tasks) |
 | POSTGRES_DB | Database name for the Postgres container |
 | POSTGRES_PASSWORD | Password for the Postgres container |
+| SUPABASE_URL | Your Supabase project URL |
+| SUPABASE_KEY | Your Supabase anon/public key |
 
 
 ## SQLite Database
@@ -71,6 +73,8 @@ The database file is git-ignored so each clone starts fresh.
 | POST | /tasks | Create a task |
 | PUT | /tasks/{id} | Update a task |
 | DELETE | /tasks/{id} | Delete a task |
+| POST | /auth/signup | Create a new user |
+| POST | /auth/login | login with your user |
 
 ## Example SQL query
 

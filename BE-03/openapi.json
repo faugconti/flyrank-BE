@@ -269,6 +269,101 @@
                     }
                 }
             }
+        },
+        "/auth/signup": {
+            "post": {
+                "summary": "Sign up a new user",
+                "operationId": "signup",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SignupRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthUser"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or invalid email/password",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "error": "Bad Request"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "summary": "Log in with email and password",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokens"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing email or password",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "error": "Bad Request"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid login credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "error": "Invalid login credentials"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -329,6 +424,65 @@
                 "properties": {
                     "error": {
                         "type": "string"
+                    }
+                }
+            },
+            "SignupRequest": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "user@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1,
+                        "example": "securepassword"
+                    }
+                }
+            },
+            "LoginRequest": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "user@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1,
+                        "example": "securepassword"
+                    }
+                }
+            },
+            "AuthTokens": {
+                "type": "object",
+                "required": ["access_token", "refresh_token"],
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "example": "eyJhbGciOiJIUzI1NiIs..."
+                    },
+                    "refresh_token": {
+                        "type": "string",
+                        "example": "dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4u"
+                    }
+                }
+            },
+            "AuthUser": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "user@example.com"
                     }
                 }
             },
