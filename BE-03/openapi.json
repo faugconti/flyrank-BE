@@ -398,19 +398,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Profile data",
+                        "description": "User profile data",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "token": {
-                                            "type": "string"
-                                        }
-                                    }
+                                    "$ref": "#/components/schemas/UserProfile"
                                 }
                             }
                         }
@@ -556,6 +548,25 @@
                     "email": {
                         "type": "string",
                         "example": "user@example.com"
+                    }
+                }
+            },
+            "UserProfile": {
+                "type": "object",
+                "required": ["id", "email", "created_at"],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "user@example.com"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T00:00:00Z"
                     }
                 }
             },

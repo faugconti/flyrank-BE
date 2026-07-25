@@ -1,6 +1,7 @@
+const supabase = require('../supabase');
 const { UnauthorizedError } = require('../errors');
 
-exports.requireAuth = (req, res, next) => {
+exports.requireAuth = async (req, res, next) => {
     const header = req.headers.authorization;
 
     if (!header || !header.startsWith('Bearer ')) {
@@ -12,6 +13,14 @@ exports.requireAuth = (req, res, next) => {
         throw new UnauthorizedError('Access token required');
     }
 
+    const client = supabase.getClient();
+    const { data, error } = await client.auth.getUser(token);
+
+    if (error || !data.user) {
+        throw new UnauthorizedError('Invalid or expired token');
+    }
+
     req.token = token;
+    req.user = data.user;
     next();
 };

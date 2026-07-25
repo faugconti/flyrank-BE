@@ -15,6 +15,7 @@ const createApp = async () => {
 
     const app = express();
     app.use(express.json());
+    
     app.use('/', metaRoutes);
     app.use('/auth', authRoutes);
     app.use('/public', publicRoutes);
