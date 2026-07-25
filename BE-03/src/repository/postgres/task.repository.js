@@ -81,10 +81,15 @@ async function getStats() {
 async function reset() {
   const client = await db.connect();
   try {
+    await client.query('BEGIN');
     await client.query('DELETE FROM tasks');
     await client.query('INSERT INTO tasks (title, done) VALUES ($1, $2)', ['Buy groceries', false]);
     await client.query('INSERT INTO tasks (title, done) VALUES ($1, $2)', ['Walk the dog', true]);
     await client.query('INSERT INTO tasks (title, done) VALUES ($1, $2)', ['Read a book', false]);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
   } finally {
     client.release();
   }
