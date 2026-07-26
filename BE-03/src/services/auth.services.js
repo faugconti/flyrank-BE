@@ -33,3 +33,12 @@ exports.login = async ({ email, password } = {}) => {
         refresh_token: data.session.refresh_token,
     };
 };
+
+exports.logout = async () => {
+    const client = supabase.getClient();
+    const { error } = await client.auth.signOut();
+
+    if (error) {
+        throw new UnauthorizedError(error.message);
+    }
+};

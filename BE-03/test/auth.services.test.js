@@ -1,16 +1,18 @@
 const mockAuth = {
     signUp: vi.fn(),
     signInWithPassword: vi.fn(),
+    signOut: vi.fn(),
 };
 
 const supabase = require('../src/supabase');
-const { signup, login } = require('../src/services/auth.services');
+const { signup, login, logout } = require('../src/services/auth.services');
 const { ValidationError, UnauthorizedError } = require('../src/errors');
 
 beforeEach(() => {
     vi.restoreAllMocks();
     mockAuth.signUp.mockReset();
     mockAuth.signInWithPassword.mockReset();
+    mockAuth.signOut.mockReset();
 });
 
 describe('signup', () => {
@@ -97,5 +99,26 @@ describe('login', () => {
 
     it('Throws ValidationError with message "Bad Request" when fields missing', async () => {
         await expect(login({})).rejects.toThrow('Bad Request');
+    });
+});
+
+describe('logout', () => {
+    it('Calls signOut and resolves successfully', async () => {
+        vi.spyOn(supabase, 'getClient').mockReturnValue({
+            auth: mockAuth,
+        });
+        mockAuth.signOut.mockResolvedValue({ error: null });
+
+        await expect(logout()).resolves.toBeUndefined();
+        expect(mockAuth.signOut).toHaveBeenCalled();
+    });
+
+    it('Throws UnauthorizedError when Supabase signOut fails', async () => {
+        vi.spyOn(supabase, 'getClient').mockReturnValue({
+            auth: mockAuth,
+        });
+        mockAuth.signOut.mockResolvedValue({ error: { message: 'Session not found' } });
+
+        await expect(logout()).rejects.toThrow(UnauthorizedError);
     });
 });
