@@ -1,8 +1,6 @@
-# flyrank-BE-04
+# flyrank Task API BE-03
 
-## Why SQLite
-
-Single file (`tasks.db`), zero setup, survives restarts. The database is created automatically on first run with the schema and three seeded tasks.
+RESTful API built using ExpressJS — tasks CRUD with Supabase Auth (signup/login/logout).
 
 ## Setup
 
@@ -12,10 +10,10 @@ Single file (`tasks.db`), zero setup, survives restarts. The database is created
 git clone https://github.com/faugconti/flyrank-BE.git
 ```
 
-2. Move to BE-04 Folder
+2. Move to BE-03 Folder
 
 ```bash
-cd BE-04
+cd BE-03
 ```
 
 3. Modify your .env
@@ -52,29 +50,30 @@ The database file is git-ignored so each clone starts fresh.
 | SUPABASE_KEY | Your Supabase anon/public key |
 
 
-## SQLite Database
+## Docs
 
-![Database in DB Browser](screenshot.png)
+![openAPIDocs](docs.png)
 
-
-## Postgre Database
-
-![Database in DB Browser](postgres.png)
 
 ## Endpoints
 
-| Method | Endpoint | Description |
-|---------|----------|-------------|
-| GET | / | API information |
-| GET | /health | Health check |
-| GET | /docs | swagger documentation |
-| GET | /tasks | List all tasks |
-| GET | /tasks/{id} | Get a task by id |
-| POST | /tasks | Create a task |
-| PUT | /tasks/{id} | Update a task |
-| DELETE | /tasks/{id} | Delete a task |
-| POST | /auth/signup | Create a new user |
-| POST | /auth/login | login with your user |
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | / | No | API information |
+| GET | /health | No | Health check |
+| GET | /docs | No | Swagger UI |
+| GET | /public/info | No | Public welcome message |
+| POST | /auth/signup | No | Create a new user |
+| POST | /auth/login | No | Log in, receive tokens |
+| POST | /auth/logout | Yes | Log out current session |
+| GET | /protected/profile | Yes | Get user profile (token verified) |
+| GET | /tasks | No | List all tasks |
+| GET | /tasks/stats | No | Task statistics |
+| GET | /tasks/{id} | No | Get a task by id |
+| POST | /tasks | No | Create a task |
+| POST | /tasks/reset | No | Reset to seed data |
+| PUT | /tasks/{id} | No | Update a task |
+| DELETE | /tasks/{id} | No | Delete a task |
 
 ## Example SQL query
 
