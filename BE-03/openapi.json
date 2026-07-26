@@ -365,6 +365,33 @@
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "summary": "Log out the current user",
+                "operationId": "logout",
+                "security": [
+                    { "bearerAuth": [] }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Logged out successfully"
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "error": "Access token required"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/public/info": {
             "get": {
                 "summary": "Public info endpoint",
