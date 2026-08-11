@@ -25,3 +25,8 @@ export const storeRecords = async (records, dir = "output") => {
 
     return { validCount: valid.length, errorCount: errors.length };
 };
+
+export const writeRunReport = async (stats, dir = "output") => {
+    await mkdir(dir, { recursive: true });
+    await writeFile(`${dir}/run-report.json`, JSON.stringify(stats, null, 2));
+};

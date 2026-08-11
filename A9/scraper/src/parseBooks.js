@@ -3,14 +3,22 @@ import * as cheerio from "cheerio";
 
 export const parseBooks = async (books) => {
     const records = [];
+    const failures = [];
 
     for (const book of books) {
-        const { html, fetched_at } = await getHTML(book.product_url);
-        const record = await parseBook(html, { ...book, fetched_at });
-        records.push(record);
+        try {
+            const { html, fetched_at } = await getHTML(book.product_url);
+            const record = await parseBook(html, { ...book, fetched_at });
+            records.push(record);
+        } catch (err) {
+            failures.push({
+                product_url: book.product_url,
+                source_page: book.source_page,
+                reason: err.message
+            });
+        }
     }
-    return records;
-
+    return { records, failures };
 }
 
 const parsePriceGbp = (text) => {

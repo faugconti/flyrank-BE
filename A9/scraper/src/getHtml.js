@@ -9,6 +9,58 @@ const headers = {
 const sleep = (ms) =>
     new Promise(resolve => setTimeout(resolve, ms));
 
+const MAX_ATTEMPTS = 2;
+const RETRY_DELAY_MS = 1000;
+const FETCH_TIMEOUT_MS = 5000;
+
+let pagesFetched = 0;
+let cacheHits = 0;
+
+export const getHtmlStats = () => ({ pagesFetched, cacheHits });
+
+export const resetHtmlStats = () => {
+    pagesFetched = 0;
+    cacheHits = 0;
+};
+
+const fetchHtml = async (url) => {
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        let response;
+        pagesFetched++;
+        try {
+            response = await fetch(url, {
+                headers,
+                signal: AbortSignal.timeout(FETCH_TIMEOUT_MS)
+            });
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                const timeoutErr = new Error(`timeout after ${FETCH_TIMEOUT_MS}ms`);
+                timeoutErr.name = 'AbortError';
+                if (attempt < MAX_ATTEMPTS) {
+                    await sleep(RETRY_DELAY_MS);
+                    continue;
+                }
+                throw timeoutErr;
+            }
+            throw err;
+        }
+
+        if (response.status === 200)
+            return response;
+
+        const err = new Error(`HTTP ${response.status}`);
+        err.status = response.status;
+
+        if (response.status >= 500 && response.status < 600) {
+            if (attempt < MAX_ATTEMPTS) {
+                await sleep(RETRY_DELAY_MS);
+                continue;
+            }
+        }
+        throw err;
+    }
+};
+
 const getCachePath = url => {
 
     const parsed = new URL(url);
@@ -46,6 +98,7 @@ export const getHTML = async (url) => {
     try {
         await access(cacheFile);
         console.log('CACHE HIT...');
+        cacheHits++;
         const html = await readFile(cacheFile, "utf-8");
         const metadata = JSON.parse(await readFile(metadataFile, "utf-8"));
         return { html, fetched_at: metadata.fetched_at }
@@ -54,13 +107,7 @@ export const getHTML = async (url) => {
         if (err.code !== 'ENOENT') throw err;
     }
     console.log('FETCH..');
-    const response = await fetch(url, {
-        headers,
-        signal: AbortSignal.timeout(5000)
-    });
-
-    if (response.status !== 200)
-        throw new Error(`HTTP ${response.status}`);
+    const response = await fetchHtml(url);
 
     const fetchedAt = new Date().toISOString();
     const html = await response.text();
