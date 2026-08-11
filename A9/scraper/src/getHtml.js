@@ -6,36 +6,50 @@ const headers = {
     'User-Agent': 'FlyRankInternshipA9/1.0 (https://github.com/faugconti/flyrank-BE)'
 }
 
+const sleep = (ms) =>
+    new Promise(resolve => setTimeout(resolve, ms));
+
 const getCachePath = url => {
 
     const parsed = new URL(url);
 
     if (parsed.pathname === "/" ||
         parsed.pathname === "/catalogue/page-1.html"
-    ) {
+    )
         return "cache/catalogue-page-1.html";
-    }
+
 
     const match = parsed.pathname.match(/\/catalogue\/page-(\d+)\.html$/);
 
     if (match) {
         const pageNumber = match[1];
-
         return `cache/catalogue-page-${pageNumber}.html`;
     }
 
-    throw new Error(`dont know how to cache: ${url}`);
+    if (parsed.pathname.startsWith("/catalogue/"))
+        return `cache${parsed.pathname}`;
+
+
+    throw new Error(`Don't know how to cache: ${url}`);
+
 
 }
 
+const getMetadataPath = (cacheFile) => {
+    return cacheFile.replace(/\.html$/, ".meta.json");
+};
 
 export const getHTML = async (url) => {
-
     const cacheFile = getCachePath(url);
+    const metadataFile = getMetadataPath(cacheFile);
+
     try {
         await access(cacheFile);
         console.log('CACHE HIT...');
-        return await readFile(cacheFile, "utf-8");
+        const html = await readFile(cacheFile, "utf-8");
+        const metadata = JSON.parse(await readFile(metadataFile, "utf-8"));
+        return { html, fetched_at: metadata.fetched_at }
+
     } catch (err) {
         if (err.code !== 'ENOENT') throw err;
     }
@@ -48,9 +62,20 @@ export const getHTML = async (url) => {
     if (response.status !== 200)
         throw new Error(`HTTP ${response.status}`);
 
+    const fetchedAt = new Date().toISOString();
     const html = await response.text();
     await mkdir(dirname(cacheFile), { recursive: true });
     await writeFile(cacheFile, html, 'utf-8');
-    return html;
+    await writeFile(
+        metadataFile,
+        JSON.stringify(
+            { fetched_at: fetchedAt },
+            null,
+            2
+        ),
+        "utf8"
+    );
+    await sleep(500);
+    return { html, fetched_at: fetchedAt };
 
 };
