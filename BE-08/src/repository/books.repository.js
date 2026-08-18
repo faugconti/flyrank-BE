@@ -39,3 +39,9 @@ export function perRating() {
     .prepare("SELECT rating, COUNT(*) AS n FROM books GROUP BY rating ORDER BY rating")
     .all();
 }
+
+export function listAll() {
+  return db
+    .prepare("SELECT title, price, rating, url FROM books ORDER BY title")
+    .all();
+}
