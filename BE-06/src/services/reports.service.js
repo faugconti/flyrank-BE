@@ -35,3 +35,11 @@ export function markReportFailed(id) {
   }
   return report;
 }
+
+export function getReportCounts() {
+  const counts = { pending: 0, done: 0, failed: 0 };
+  for (const report of reports.values()) {
+    counts[report.status] = (counts[report.status] ?? 0) + 1;
+  }
+  return counts;
+}
