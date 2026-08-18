@@ -1,0 +1,18 @@
+{
+  "name": "be-08",
+  "version": "1.0.0",
+  "description": "FlyRank Backend Track — Week 4, Assignment A8: PDF report generator.",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "seed": "node scripts/seed.js",
+    "report-data": "node scripts/show-report.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "playwright": "^1.62.1"
+  }
+}
