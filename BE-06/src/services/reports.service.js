@@ -27,3 +27,11 @@ export function markReportDone(id, result) {
   }
   return report;
 }
+
+export function markReportFailed(id) {
+  const report = reports.get(id);
+  if (report) {
+    report.status = "failed";
+  }
+  return report;
+}
