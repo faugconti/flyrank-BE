@@ -23,3 +23,19 @@ export function insertMany(books) {
 export function count() {
   return db.prepare("SELECT COUNT(*) AS n FROM books").get().n;
 }
+
+export function avgPrice() {
+  return db.prepare("SELECT AVG(price) AS avg FROM books").get().avg;
+}
+
+export function mostExpensive(limit = 5) {
+  return db
+    .prepare("SELECT title, price FROM books ORDER BY price DESC LIMIT ?")
+    .all(limit);
+}
+
+export function perRating() {
+  return db
+    .prepare("SELECT rating, COUNT(*) AS n FROM books GROUP BY rating ORDER BY rating")
+    .all();
+}
