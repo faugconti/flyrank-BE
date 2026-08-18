@@ -1,0 +1,18 @@
+{
+  "name": "be-06",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "INNGEST_DEV=1 node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "inngest": "^4.18.1"
+  },
+  "devDependencies": {}
+}
