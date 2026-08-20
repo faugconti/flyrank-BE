@@ -1,4 +1,11 @@
-import { count, avgPrice, mostExpensive, perRating } from "../repository/books.repository.js";
+import { mkdirSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { count, avgPrice, mostExpensive, perRating, listAll } from "../repository/books.repository.js";
+import { renderPdf } from "./pdf.services.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+export const REPORTS_DIR = path.join(__dirname, "..", "..", "reports");
 
 export function getReportData() {
   return {
@@ -15,6 +22,15 @@ function stars(rating) {
 
 function gbp(value) {
   return `£${Number(value).toFixed(2)}`;
+}
+
+export async function generateReportPdf(id) {
+  mkdirSync(REPORTS_DIR, { recursive: true });
+  const report = getReportData();
+  const books = listAll();
+  const html = buildReportHtml(report, books);
+  await renderPdf(html, path.join(REPORTS_DIR, `${id}.pdf`));
+  return `reports/${id}.pdf`;
 }
 
 export function buildReportHtml(report, books) {
