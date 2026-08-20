@@ -1,9 +1,15 @@
 import path from "node:path";
-import { insert, updatePath, findById } from "../repository/reports.repository.js";
+import { insert, updatePath, findById, findToday } from "../repository/reports.repository.js";
 import { generateReportPdf, REPORTS_DIR } from "../services/report.services.js";
 
 export async function createReport(req, res) {
   try {
+    if (!req.body?.force) {
+      const existing = findToday();
+      if (existing) {
+        return res.status(200).json({ id: existing.id, file: `/reports/${existing.id}/file` });
+      }
+    }
     const id = insert();
     const storedPath = await generateReportPdf(id);
     updatePath(id, storedPath);

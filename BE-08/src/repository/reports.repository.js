@@ -13,3 +13,9 @@ export function updatePath(id, path) {
 export function findById(id) {
   return db.prepare("SELECT id, path, created_at FROM reports WHERE id = ?").get(id);
 }
+
+export function findToday() {
+  return db
+    .prepare("SELECT id, path, created_at FROM reports WHERE date(created_at) = date('now') LIMIT 1")
+    .get();
+}
