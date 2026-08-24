@@ -1,4 +1,4 @@
-# flyrank Task API BE-03
+# flyrank Task API A17
 
 RESTful API built using ExpressJS — tasks CRUD with Supabase Auth (signup/login/logout).
 
@@ -10,10 +10,10 @@ RESTful API built using ExpressJS — tasks CRUD with Supabase Auth (signup/logi
 git clone https://github.com/faugconti/flyrank-BE.git
 ```
 
-2. Move to BE-03 Folder
+2. Move to A17 Folder
 
 ```bash
-cd BE-03
+cd A17
 ```
 
 3. Modify your .env
@@ -48,6 +48,12 @@ The database file is git-ignored so each clone starts fresh.
 | POSTGRES_PASSWORD | Password for the Postgres container |
 | SUPABASE_URL | Your Supabase project URL |
 | SUPABASE_KEY | Your Supabase anon/public key |
+| LLM_BASE_URL | OpenAI-compatible endpoint of the provider (Gemini: `https://generativelanguage.googleapis.com/v1beta/openai/`) |
+| LLM_API_KEY | Provider API key |
+| LLM_MODEL | Model name (e.g. `gemini-2.5-flash`) |
+| LLM_TIMEOUT_MS | LLM call timeout in ms (default 30000) |
+| LLM_STUB | Set to `1` to skip the model and return a stub response |
+| LLM_ENABLED | Set to `false` to disable the LLM feature entirely (kill switch) |
 
 
 ## Docs
@@ -74,6 +80,44 @@ The database file is git-ignored so each clone starts fresh.
 | POST | /tasks/reset | No | Reset to seed data |
 | PUT | /tasks/{id} | No | Update a task |
 | DELETE | /tasks/{id} | No | Delete a task |
+| POST | /enrich | No | Enrich a product record with LLM (category, summary, quality flags) |
+
+## LLM enrichment endpoint
+
+`POST /enrich` takes a scraped record (`title` required, `description` optional)
+and returns an LLM-generated category, one-sentence summary and data-quality
+flags. Set `LLM_STUB=1` in `.env` to run without calling the model.
+
+Valid request:
+
+```bash
+LLM_STUB=1 node index.js &
+curl -s -X POST http://localhost:3000/enrich \
+  -H "Content-Type: application/json" \
+  -d '{"title":"A Light in the Attic","description":"A classic collection of poetry by Shel Silverstein."}'
+```
+
+Output:
+
+```json
+{"category":"fiction","summary":"Stub enrichment for \"A Light in the Attic\".","quality_flags":[],"confidence":1}
+```
+
+Broken request (missing title → 400 naming the field):
+
+```bash
+curl -i -X POST http://localhost:3000/enrich \
+  -H "Content-Type: application/json" \
+  -d '{"description":"no title here"}'
+```
+
+Output:
+
+```http
+HTTP/1.1 400 Bad Request
+
+{"error":"title: Invalid input: expected string, received undefined"}
+```
 
 ## Example SQL query
 

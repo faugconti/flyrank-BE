@@ -4,6 +4,7 @@ const openAPI = require('../openapi.json');
 const { initDb } = require('./db');
 
 const taskRoutes = require('./routes/tasks.routes');
+const enrichRoutes = require('./routes/enrich.routes');
 const metaRoutes = require('./routes/meta.routes');
 const authRoutes = require('./routes/auth.routes');
 const publicRoutes = require('./routes/public.routes');
@@ -21,6 +22,7 @@ const createApp = async () => {
     app.use('/public', publicRoutes);
     app.use('/protected', protectedRoutes);
     app.use('/tasks', taskRoutes);
+    app.use('/enrich', enrichRoutes);
     app.use('/docs', swaggerUI.serve, swaggerUI.setup(openAPI));
     app.use(errorHandler);
 
