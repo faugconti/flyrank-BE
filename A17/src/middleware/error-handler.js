@@ -1,4 +1,4 @@
-const { NotFoundError, ValidationError, UnauthorizedError, UpstreamError } = require('../errors');
+const { NotFoundError, ValidationError, UnauthorizedError, UpstreamError, UnprocessableError } = require('../errors');
 
 const errorHandler = (err, req, res, next) => {
     if (err instanceof ValidationError) {
@@ -9,6 +9,9 @@ const errorHandler = (err, req, res, next) => {
     }
     if (err instanceof UpstreamError) {
         return res.status(503).json({ error: err.message });
+    }
+    if (err instanceof UnprocessableError) {
+        return res.status(422).json({ error: err.message });
     }
     if (err instanceof NotFoundError) {
         return res.status(404).json({ error: err.message });

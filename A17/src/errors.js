@@ -26,4 +26,11 @@ class UpstreamError extends Error {
   }
 }
 
-module.exports = { NotFoundError, ValidationError, UnauthorizedError, UpstreamError };
+class UnprocessableError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'UnprocessableError';
+  }
+}
+
+module.exports = { NotFoundError, ValidationError, UnauthorizedError, UpstreamError, UnprocessableError };
