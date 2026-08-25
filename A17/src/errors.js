@@ -33,4 +33,11 @@ class UnprocessableError extends Error {
   }
 }
 
-module.exports = { NotFoundError, ValidationError, UnauthorizedError, UpstreamError, UnprocessableError };
+class TimeoutError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'TimeoutError';
+  }
+}
+
+module.exports = { NotFoundError, ValidationError, UnauthorizedError, UpstreamError, UnprocessableError, TimeoutError };

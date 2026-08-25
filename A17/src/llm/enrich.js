@@ -2,7 +2,8 @@ const { readFile, appendFile, mkdir } = require('node:fs/promises');
 const path = require('node:path');
 const { createProvider } = require('./provider');
 const { outputSchema, formatIssues } = require('./schema');
-const { UnprocessableError, UpstreamError } = require('../errors');
+const pricing = require('./pricing');
+const { UnprocessableError, UpstreamError, TimeoutError } = require('../errors');
 
 const PROMPT_PATH = path.join(__dirname, '..', '..', 'prompts', 'enrich-v1.md');
 const PROMPT_VERSION = 'v1';
@@ -33,12 +34,25 @@ function isProviderError(err) {
   return typeof err?.status === 'number' && err.status >= 400;
 }
 
+function logCost({ model, stats, durationMs }) {
+  console.log(JSON.stringify({
+    prompt_version: PROMPT_VERSION,
+    model,
+    attempts: stats.attempts,
+    input_tokens: stats.inputTokens,
+    output_tokens: stats.outputTokens,
+    duration_ms: durationMs,
+    repaired: stats.repaired,
+    cost_usd: pricing.costUsd(model, stats.inputTokens, stats.outputTokens),
+  }));
+}
+
 async function quarantine({ input, rawOutput, errors }) {
   const line = JSON.stringify({
     timestamp: new Date().toISOString(),
     prompt_version: PROMPT_VERSION,
     input,
-    raw_output: rawOutput.slice(0, 2000),
+    raw_output: String(rawOutput).slice(0, 2000),
     errors,
   });
   await mkdir(path.dirname(QUARANTINE_PATH), { recursive: true });
@@ -64,49 +78,68 @@ exports.enrich = async ({ title, description }) => {
   const systemPrompt = await loadSystemPrompt();
   const input = { title, description };
   const userMessage = { role: 'user', content: JSON.stringify(input) };
+  const startedAt = Date.now();
+  const stats = { attempts: 0, inputTokens: 0, outputTokens: 0, repaired: false };
 
-  // Attempt 1
-  let rawOutput;
-  let result;
-  let errors;
-  try {
-    ({ text: rawOutput } = await provider.complete([
-      { role: 'system', content: systemPrompt },
-      userMessage,
-    ]));
-    result = parseModelOutput(rawOutput);
-    const parsed = outputSchema.safeParse(result);
-    if (parsed.success) return parsed.data;
-    errors = formatIssues(parsed.error);
-  } catch (err) {
-    if (isProviderError(err)) {
-      throw new UpstreamError(`LLM provider request failed: ${err.status ?? ''} ${err.message}`);
+  async function call(messages) {
+    stats.attempts += 1;
+    try {
+      const { text, usage } = await provider.complete(messages);
+      stats.inputTokens += usage?.prompt_tokens ?? 0;
+      stats.outputTokens += usage?.completion_tokens ?? 0;
+      return text;
+    } catch (err) {
+      // Provider HTTP errors are not output-quality problems — do not
+      // route them into repair/quarantine. TimeoutError passes through.
+      if (isProviderError(err)) {
+        throw new UpstreamError(`LLM provider request failed: ${err.status} ${String(err.message).slice(0, 300)}`);
+      }
+      throw err;
     }
-    if (err instanceof UnprocessableError) throw err;
-    errors = [err.message];
-    rawOutput = rawOutput ?? String(err.message);
   }
 
-  // One repair retry
   try {
-    ({ text: rawOutput } = await provider.complete(
-      await repairMessages(systemPrompt, input, rawOutput, errors),
-    ));
-    result = parseModelOutput(rawOutput);
-    const parsed = outputSchema.safeParse(result);
-    if (parsed.success) return parsed.data;
-    errors = formatIssues(parsed.error);
-  } catch (err) {
-    if (isProviderError(err)) {
-      throw new UpstreamError(`LLM provider request failed during repair: ${err.status ?? ''} ${err.message}`);
-    }
-    if (err instanceof UnprocessableError) throw err;
-    errors = [err.message];
+    return await run();
+  } finally {
+    logCost({ model: provider.model, stats, durationMs: Date.now() - startedAt });
   }
 
-  // Give up cleanly
-  await quarantine({ input, rawOutput: rawOutput ?? '', errors });
-  throw new UnprocessableError(
-    `LLM output could not be validated after one repair retry: ${errors.join('; ')}`,
-  );
+  async function run() {
+    // Attempt 1
+    let rawOutput;
+    let errors;
+    try {
+      rawOutput = await call([
+        { role: 'system', content: systemPrompt },
+        userMessage,
+      ]);
+      const parsed = outputSchema.safeParse(parseModelOutput(rawOutput));
+      if (parsed.success) return parsed.data;
+      errors = formatIssues(parsed.error);
+    } catch (err) {
+      if (err instanceof TimeoutError || err instanceof UpstreamError) throw err;
+      errors = [err.message];
+      rawOutput = rawOutput ?? String(err.message);
+    }
+
+    // One repair retry
+    stats.repaired = true;
+    try {
+      rawOutput = await call(
+        await repairMessages(systemPrompt, input, rawOutput, errors),
+      );
+      const parsed = outputSchema.safeParse(parseModelOutput(rawOutput));
+      if (parsed.success) return parsed.data;
+      errors = formatIssues(parsed.error);
+    } catch (err) {
+      if (err instanceof TimeoutError || err instanceof UpstreamError) throw err;
+      errors = [err.message];
+    }
+
+    // Give up cleanly
+    await quarantine({ input, rawOutput: rawOutput ?? '', errors });
+    throw new UnprocessableError(
+      `LLM output could not be validated after one repair retry: ${errors.join('; ')}`,
+    );
+  }
 };

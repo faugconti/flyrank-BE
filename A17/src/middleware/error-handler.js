@@ -13,6 +13,9 @@ const errorHandler = (err, req, res, next) => {
     if (err instanceof UnprocessableError) {
         return res.status(422).json({ error: err.message });
     }
+    if (err instanceof TimeoutError) {
+        return res.status(504).json({ error: err.message });
+    }
     if (err instanceof NotFoundError) {
         return res.status(404).json({ error: err.message });
     }
