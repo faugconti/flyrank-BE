@@ -1,0 +1,68 @@
+[
+  {
+    "name": "typical fiction novel",
+    "input": {
+      "title": "The Midnight Library",
+      "description": "Nora Seed finds herself faced with the decision of her life when she lands in a library between life and death, where every book is a portal to a life she could have lived."
+    },
+    "expected": { "category": "fiction" }
+  },
+  {
+    "name": "truncated children's poetry (poor_description)",
+    "input": {
+      "title": "A Light in the Attic",
+      "description": "It's hard to imagine a world without A Light in the Attic. This now-classic collection of poetry by Shel Silverstein celebrates its 20th anniversary... love th It's hard to imagine"
+    },
+    "expected": { "category": "children", "quality_flags_include": "poor_description" }
+  },
+  {
+    "name": "wartime diary biography",
+    "input": {
+      "title": "The Diary of a Young Girl",
+      "description": "The wartime diary kept by Anne Frank while hiding in Amsterdam during the German occupation."
+    },
+    "expected": { "category": "biography" }
+  },
+  {
+    "name": "popular science",
+    "input": {
+      "title": "A Brief History of Time",
+      "description": "Hawking attempts to explain a range of subjects in cosmology, including the Big Bang, black holes and light cones, to nonspecialist readers."
+    },
+    "expected": { "category": "science" }
+  },
+  {
+    "name": "romance novel",
+    "input": {
+      "title": "Pride and Prejudice",
+      "description": "Elizabeth Bennet and Mr Darcy spar with wit and pride in this classic Regency courtship novel of first impressions slowly undone."
+    },
+    "expected": { "category": "romance" }
+  },
+  {
+    "name": "music history",
+    "input": {
+      "title": "Life",
+      "description": "The autobiography of Keith Richards, guitarist of the Rolling Stones, covering five decades of rock and roll, guitars and survival."
+    },
+    "expected": { "category": "music" }
+  },
+  {
+    "name": "garbage record, no description (when-unsure)",
+    "input": {
+      "title": "Bxk99"
+    },
+    "expected": {
+      "category": "other",
+      "confidence_below": 0.5
+    }
+  },
+  {
+    "name": "ambiguous: magical realism bestseller",
+    "input": {
+      "title": "The Night Circus",
+      "description": "A mysterious circus appears without warning, open only from sunset to sunrise, where two young illusionists bound to a duel since childhood fall in love."
+    },
+    "expected": { "category": "fiction", "accept_alternatives": ["fantasy"] }
+  }
+]
